@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
+import axios from 'axios';
 import { Button, Form } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import TermsAndCondition from '../TermsAndCondition';
@@ -7,57 +8,95 @@ import { formValidate } from '../../Schema';
 
 const AddMember = () => {
   const navigate = useNavigate();
+  const bodyFormData = new FormData();
+  const [userFile, setUserFile] = useState([]);
+  const [userData, setUserData] = useState('');
+  const imageRef1 = useRef('');
+  const imageRef2 = useRef('');
+  const imageRef3 = useRef('');
+  const imageRef4 = useRef('');
+  const imageRef5 = useRef('');
+
   const initialValues = {
     firstName: '',
     fatherName: '',
     address: '',
     AadharNumber: '',
-    AadharPhoto: '',
     AccountNumber: '',
-    bankPassbook: '',
     PanNumber: '',
-    panCard: '',
-    passportSizePhoto: '',
-    signaturePhoto: '',
     Mobile: '',
     email: '',
     formBasicCheckbox: '',
   };
-  // const [userData, setUserData] = useState({
-  //   firstName: '',
-  //   fatherName: '',
-  //   address: '',
-  //   AadharNumber: '',
-  //   AadharPhoto: '',
-  //   AccountNumber: '',
-  //   bankPassbook: '',
-  //   PanNumber: '',
-  //   panCard: '',
-  //   passportSizePhoto: '',
-  //   signaturePhoto: '',
-  //   Mobile: '',
-  //   email: '',
-  // });
+
+  const onChangeHandler = (e) => {
+    const name = e.target.name;
+    const files = e.target.files[0];
+    setUserFile({ ...userFile, [name]: files });
+    // const file = e.target.files[0];
+    // console.log(file);
+    // setUserFile({ ...userFile, [name]: file });
+  };
 
   const { values, errors, touched, handleBlur, handleChange, handleSubmit } =
     useFormik({
       initialValues,
-      validationSchema: formValidate,
+      // validationSchema: formValidate,
       onSubmit: (values, action) => {
         SubmitHandler(values, action);
         // action.resetForm();
       },
     });
 
-  // const onChangeHandler = (e) => {
-  //   const { name, value } = e.target;
-  //   setUserData({ ...userData, [name]: value });
-  // };
-  const SubmitHandler = (values, action) => {
-    console.log(
-      '🚀 ~ file: Registration.jsx ~ line 11 ~ Registration ~ values',
-      values
-    );
+  const appendFormData = (values) => {
+    bodyFormData.append('AadharPhoto', userFile.AadharPhoto);
+    bodyFormData.append('bankPassbook', userFile.bankPassbook);
+    bodyFormData.append('panCard', userFile.panCard);
+    bodyFormData.append('passportSizePhoto', userFile.passportSizePhoto);
+    bodyFormData.append('signaturePhoto', userFile.signaturePhoto);
+    bodyFormData.append('data', JSON.stringify(values));
+    setUserData(bodyFormData);
+  };
+
+  const SubmitHandler = async (values, action) => {
+    appendFormData(values);
+    for (const value of bodyFormData) {
+      console.log(value);
+    }
+
+    // userFile.
+    try {
+      // const { data } = await axios.post('/register', bodyFormData, {
+      // headers: {
+      // 'Content-Type': 'multipart/form-data',
+      // },
+      // });
+      // console.log(data);
+
+      const { data } = await axios.post(
+        '/register',
+
+        userData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
+      console.log(data);
+    } catch (error) {
+      console.log(error);
+    }
+    // console.log(
+    // '🚀 ~ file: Registration.jsx ~ line 11 ~ Registration ~ values',
+    // values
+    // );
+    imageRef1.current.value = '';
+    imageRef2.current.value = '';
+    imageRef3.current.value = '';
+    imageRef4.current.value = '';
+    imageRef5.current.value = '';
+
     action.resetForm();
   };
   return (
@@ -151,10 +190,11 @@ const AddMember = () => {
             <Form.Group className="mb-3" controlId="AadharPhoto">
               <Form.Label>Aadhar Photo</Form.Label>
               <Form.Control
-                onChange={handleChange}
-                value={values.AadharPhoto}
+                onChange={onChangeHandler}
+                accept="image/x-png,image/gif,image/jpeg"
                 name="AadharPhoto"
                 type="file"
+                ref={imageRef1}
                 placeholder="Select Aadhar Photo"
               />
             </Form.Group>
@@ -176,10 +216,11 @@ const AddMember = () => {
             <Form.Group className="mb-3" controlId="bankPassbook">
               <Form.Label>Bank Passbook Photo</Form.Label>
               <Form.Control
-                onChange={handleChange}
-                value={values.bankPassbook}
+                onChange={onChangeHandler}
                 name="bankPassbook"
                 type="file"
+                accept="image/x-png,image/gif,image/jpeg"
+                ref={imageRef2}
                 placeholder="Select Bank Passbook Photo"
               />
             </Form.Group>
@@ -201,10 +242,11 @@ const AddMember = () => {
             <Form.Group className="mb-3" controlId="panCard">
               <Form.Label>Pan Card Photo</Form.Label>
               <Form.Control
-                onChange={handleChange}
-                value={values.panCard}
+                onChange={onChangeHandler}
                 name="panCard"
                 type="file"
+                accept="image/x-png,image/gif,image/jpeg"
+                ref={imageRef3}
                 placeholder="Select Pan Card Photo"
               />
             </Form.Group>
@@ -212,8 +254,9 @@ const AddMember = () => {
             <Form.Group className="mb-3" controlId="passportSizePhoto">
               <Form.Label>Passport Size Photo</Form.Label>
               <Form.Control
-                onChange={handleChange}
-                value={values.passportSizePhoto}
+                onChange={onChangeHandler}
+                accept="image/x-png,image/gif,image/jpeg"
+                ref={imageRef4}
                 name="passportSizePhoto"
                 type="file"
                 placeholder="Select Passport Size Photo"
@@ -222,8 +265,9 @@ const AddMember = () => {
             <Form.Group className="mb-3" controlId="signature">
               <Form.Label>Signature Photo</Form.Label>
               <Form.Control
-                onChange={handleChange}
-                value={values.signaturePhoto}
+                onChange={onChangeHandler}
+                accept="image/x-png,image/gif,image/jpeg"
+                ref={imageRef5}
                 name="signaturePhoto"
                 type="file"
                 placeholder="Select Signature Photo"
